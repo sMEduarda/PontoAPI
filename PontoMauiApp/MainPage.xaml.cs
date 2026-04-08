@@ -1,88 +1,37 @@
-﻿using Mapsui;
-using Mapsui.Tiling;
-using Mapsui.UI.Maui;
-using Mapsui.Layers;
-using Mapsui.Projections;
-using Mapsui.Styles;
-using Mapsui.Features;
-using System.Text;
-using System.Text.Json;
-using PontoMauiApp.Models;
+﻿using System.Text.Json;
+using System.Collections.ObjectModel;
 
 namespace PontoMauiApp;
 
 public partial class MainPage : ContentPage
 {
-    private const string ApiBaseUrl = "http://10.0.2.2:7000/";
     private readonly HttpClient _httpClient;
 
-    private List<PontoRegistro> registros = new();
+    public ObservableCollection<PontoRegistro> Registros { get; set; } = new();
 
-    public MainPage()
+    public MainPage(HttpClient httpClient)
     {
         InitializeComponent();
+        BindingContext = this;
 
-        _httpClient = new HttpClient
-        {
-            BaseAddress = new Uri(ApiBaseUrl)
-        };
+        _httpClient = httpClient;
 
-        // 🔥 Inicializa mapa OpenStreetMap
-        var map = new Mapsui.Map();
-        map.Layers.Add(OpenStreetMap.CreateTileLayer());
-
-        mapa.Map = map;
-
-        //  _ = CarregarRegistros();
+        _ = CarregarRegistrosAsync();
     }
 
-    private async Task CarregarRegistros()
+    // ==================== ENTRADA ====================
+    private async void BtnEntrada_Clicked(object sender, EventArgs e)
     {
-        try
-        {
-            var response = await _httpClient.GetAsync("api/PontoRegistros");
-
-            if (!response.IsSuccessStatusCode)
-                return;
-
-            var json = await response.Content.ReadAsStringAsync();
-
-            registros = JsonSerializer.Deserialize<List<PontoRegistro>>(json);
-
-            listaRegistros.ItemsSource = registros;
-
-            // 🔥 Limpa e recria mapa base
-            mapa.Map.Layers.Clear();
-            mapa.Map.Layers.Add(OpenStreetMap.CreateTileLayer());
-
-            foreach (var item in registros)
-            {
-                var point = SphericalMercator.FromLonLat(item.Longitude, item.Latitude);
-
-                var position = new MPoint(point.x, point.y);
-
-                var feature = new PointFeature(position);
-
-                feature.Styles.Add(new SymbolStyle
-                {
-                    SymbolScale = 0.8
-                });
-
-                var layer = new MemoryLayer
-                {
-                    Features = new[] { feature }
-                };
-
-                mapa.Map.Layers.Add(layer);
-            }
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Erro ao carregar", ex.Message, "OK");
-        }
+        await RegistrarPonto("Entrada");
     }
 
-    private async void BtnCheckIn_Clicked(object sender, EventArgs e)
+    // ==================== SAÍDA ====================
+    private async void BtnSaida_Clicked(object sender, EventArgs e)
+    {
+        await RegistrarPonto("Saída");
+    }
+
+    private async Task RegistrarPonto(string tipo)
     {
         try
         {
@@ -99,7 +48,7 @@ public partial class MainPage : ContentPage
 
             if (location == null)
             {
-                await DisplayAlert("Erro", "Não foi possível obter localização.", "OK");
+                await DisplayAlert("Erro", "Não foi possível obter a localização.", "OK");
                 return;
             }
 
@@ -107,50 +56,64 @@ public partial class MainPage : ContentPage
             {
                 Horario = DateTime.UtcNow,
                 Latitude = location.Latitude,
-                Longitude = location.Longitude
+                Longitude = location.Longitude,
+                Observacao = $"{tipo} - {DateTime.Now:HH:mm}"
             };
 
             var json = JsonSerializer.Serialize(registro);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync("api/PontoRegistros", content);
 
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
-                await DisplayAlert("Erro", "Erro ao salvar na API.", "OK");
-                return;
+                await DisplayAlert("Sucesso", $"{tipo} registrada com sucesso!", "OK");
+                await CarregarRegistrosAsync();
             }
-
-            // 🔥 Adiciona ponto no mapa
-            var point = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
-
-            var position = new MPoint(point.x, point.y);
-
-            var feature = new PointFeature(position);
-
-            feature.Styles.Add(new SymbolStyle
+            else
             {
-                SymbolScale = 1.0
-            });
-
-            var layer = new MemoryLayer
-            {
-                Features = new[] { feature }
-            };
-
-            mapa.Map.Layers.Add(layer);
-
-            // 🔥 Centraliza no ponto
-            mapa.Map.Navigator.CenterOn(position);
-            mapa.Map.Navigator.ZoomTo(1000);
-
-            await CarregarRegistros();
-
-            await DisplayAlert("Sucesso", "Ponto registrado!", "OK");
+                var erro = await response.Content.ReadAsStringAsync();
+                await DisplayAlert("Erro API", erro, "OK");
+            }
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Erro", ex.Message, "OK");
+            await DisplayAlert("Erro", $"{ex.Message}\n\n{ex.InnerException?.Message}", "OK");
+        }
+    }
+
+    private async Task CarregarRegistrosAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("api/PontoRegistros");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+
+                var lista = JsonSerializer.Deserialize<List<PontoRegistro>>(json);
+
+                Registros.Clear();
+
+                foreach (var item in lista.OrderByDescending(r => r.Horario))
+                    Registros.Add(item);
+            }
+        }
+        catch
+        {
+            // API pode estar offline
+        }
+    }
+
+    // ==================== GOOGLE MAPS ====================
+    private async void VerNoMapa_Clicked(object sender, EventArgs e)
+    {
+        if (sender is Button btn && btn.CommandParameter is PontoRegistro reg)
+        {
+            var url = $"https://www.google.com/maps?q={reg.Latitude},{reg.Longitude}";
+            await Launcher.OpenAsync(new Uri(url));
         }
     }
 }

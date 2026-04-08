@@ -1,62 +1,111 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
              x:Class="PontoMauiApp.MainPage"
-             Title="Registro de Ponto">
+             Title="Registro de Ponto"
+             BackgroundColor="White">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="15">
+    <ScrollView VerticalOptions="FillAndExpand">
+        <VerticalStackLayout Padding="20" Spacing="20" VerticalOptions="FillAndExpand">
 
-            <Label Text="App de Registro de Ponto"
-                   FontSize="24"
+            <!-- Cabeçalho -->
+            <Label Text="Olá, Maria!"
+                   FontSize="28"
                    FontAttributes="Bold"
-                   HorizontalOptions="Center" />
+                   HorizontalOptions="Start" />
 
-            <Button Text="📍 Fazer Check-in por GPS"
-                    FontSize="18"
-                    HeightRequest="60"
-                    Clicked="BtnCheckIn_Clicked"
-                    BackgroundColor="#2196F3"
-                    TextColor="White" />
+            <Label Text="Registre seu ponto com sua localização"
+                   FontSize="16"
+                   TextColor="Gray" />
 
-            <mapsui:MapControl x:Name="mapa"
-                   HeightRequest="400" />
+            <!-- Card de registro -->
+            <Frame BackgroundColor="#F0F8FF" 
+                   CornerRadius="16" 
+                   Padding="20"
+                   HasShadow="True">
 
-            <Label Text="Últimos Registros"
-                   FontSize="18"
-                   FontAttributes="Bold" />
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Ative sua localização para registrar o ponto"
+                           FontSize="16"
+                           TextColor="#333333" />
 
-            <!-- 🔥 AQUI ESTÁ A MUDANÇA -->
+                    <Button Text="📍 REGISTRAR PONTO (ENTRADA)"
+                            FontSize="18"
+                            HeightRequest="68"
+                            BackgroundColor="#2196F3"
+                            TextColor="White"
+                            CornerRadius="12"
+                            Clicked="BtnEntrada_Clicked" />
+
+                    <Button Text="📍 REGISTRAR PONTO (SAÍDA)"
+                            FontSize="18"
+                            HeightRequest="68"
+                            BackgroundColor="#FF9800"
+                            TextColor="White"
+                            CornerRadius="12"
+                            Clicked="BtnSaida_Clicked"
+                            Margin="0,8,0,0" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Lista de registros recentes -->
+            <Label Text="Registros recentes"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   Margin="0,10,0,0" />
+
             <CollectionView x:Name="listaRegistros"
-                            HeightRequest="200">
+                            HeightRequest="380"
+                            ItemsSource="{Binding Registros}"
+                            VerticalOptions="FillAndExpand">
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame BorderColor="LightGray"
-                               CornerRadius="10"
-                               Padding="10"
-                               Margin="5">
+                        <Frame CornerRadius="12" 
+                               Padding="15" 
+                               Margin="0,6"
+                               HasShadow="True"
+                               BackgroundColor="White">
+                            <VerticalStackLayout Spacing="6">
+                                <HorizontalStackLayout>
+                                    <Label Text="{Binding Horario, StringFormat='{0:dd/MM/yyyy}'}"
+                                           FontAttributes="Bold"
+                                           TextColor="#333" />
+                                    <Label Text="{Binding Horario, StringFormat=' • {0:HH:mm}'}"
+                                           Margin="10,0,0,0"
+                                           TextColor="#666" />
+                                </HorizontalStackLayout>
 
-                            <VerticalStackLayout Spacing="5">
-
-                                <Label Text="{Binding Horario}"
-                                       FontAttributes="Bold"
+                                <Label Text="{Binding Latitude, StringFormat='Lat: {0:F6}'}" 
+                                       FontSize="14" />
+                                <Label Text="{Binding Longitude, StringFormat='Lon: {0:F6}'}" 
                                        FontSize="14" />
 
-                                <Label Text="{Binding Latitude, StringFormat='Lat: {0:F4}'}"
-                                       FontSize="12" />
+                                <Label Text="{Binding Observacao}"
+                                       TextColor="#555"
+                                       FontSize="14" />
 
-                                <Label Text="{Binding Longitude, StringFormat='Lon: {0:F4}'}"
-                                       FontSize="12" />
-
+                                <Button Text="🗺️ Ver no mapa"
+                                        BackgroundColor="Transparent"
+                                        TextColor="#2196F3"
+                                        FontSize="15"
+                                        FontAttributes="Bold"
+                                        HorizontalOptions="End"
+                                        Clicked="VerNoMapa_Clicked"
+                                        CommandParameter="{Binding .}" />
                             </VerticalStackLayout>
-
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
-
             </CollectionView>
+
+            <!-- Mensagem quando não há registros -->
+            <Label x:Name="lblEmpty"
+                   Text="Nenhum registro ainda"
+                   IsVisible="False"
+                   TextColor="Gray"
+                   HorizontalOptions="Center"
+                   Margin="0,20" />
 
         </VerticalStackLayout>
     </ScrollView>

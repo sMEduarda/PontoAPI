@@ -11,7 +11,8 @@ namespace PontoMauiApp
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new AppShell());
+            var shell = Handler.MauiContext.Services.GetService<AppShell>();
+            return new Window(shell);
         }
     }
 }
