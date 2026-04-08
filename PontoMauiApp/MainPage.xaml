@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
+             x:Class="PontoMauiApp.MainPage"
+             Title="Registro de Ponto">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <Label Text="App de Registro de Ponto"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+
+            <Button Text="📍 Fazer Check-in por GPS"
+                    FontSize="18"
+                    HeightRequest="60"
+                    Clicked="BtnCheckIn_Clicked"
+                    BackgroundColor="#2196F3"
+                    TextColor="White" />
+
+            <mapsui:MapControl x:Name="mapa"
+                   HeightRequest="400" />
+
+            <Label Text="Últimos Registros"
+                   FontSize="18"
+                   FontAttributes="Bold" />
+
+            <!-- 🔥 AQUI ESTÁ A MUDANÇA -->
+            <CollectionView x:Name="listaRegistros"
+                            HeightRequest="200">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="LightGray"
+                               CornerRadius="10"
+                               Padding="10"
+                               Margin="5">
+
+                            <VerticalStackLayout Spacing="5">
+
+                                <Label Text="{Binding Horario}"
+                                       FontAttributes="Bold"
+                                       FontSize="14" />
+
+                                <Label Text="{Binding Latitude, StringFormat='Lat: {0:F4}'}"
+                                       FontSize="12" />
+
+                                <Label Text="{Binding Longitude, StringFormat='Lon: {0:F4}'}"
+                                       FontSize="12" />
+
+                            </VerticalStackLayout>
+
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

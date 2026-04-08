@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PontoAPI/PontoAPI.csproj" />
+  <Project Path="PontoMauiApp/PontoMauiApp.csproj" />
+</Solution>

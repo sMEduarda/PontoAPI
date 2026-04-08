@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "Novo Perfil",
+    "Projects": [
+      {
+        "Path": "PontoAPI\\PontoAPI.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      },
+      {
+        "Path": "PontoMauiApp\\PontoMauiApp.csproj",
+        "Action": "Start",
+        "DebugTarget": "Pixel 7 - API 34.0 (Android 14.0 – API 34)"
+      }
+    ]
+  }
+]
