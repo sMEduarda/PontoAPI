@@ -112,7 +112,11 @@ public partial class MainPage : ContentPage
     {
         if (sender is Button btn && btn.CommandParameter is PontoRegistro reg)
         {
-            var url = $"https://www.google.com/maps?q={reg.Latitude},{reg.Longitude}";
+            var lat = reg.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var lon = reg.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+            var url = $"https://www.google.com/maps?q={lat},{lon}";
+
             await Launcher.OpenAsync(new Uri(url));
         }
     }
